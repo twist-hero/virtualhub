@@ -47,7 +47,7 @@ BEGIN
       updated_at
     ) VALUES (
       'global_config',
-      COALESCE(p_settings->'payment_ghana',   '{"provider":"Telecel","accountName":"NEW SOLOMON KUMI","accountNumber":"0508515521"}'::jsonb),
+      COALESCE(p_settings->'payment_ghana',   '{"provider":"Telecel","accountName":"SOLOMON KUMI","accountNumber":"0508515521"}'::jsonb),
       COALESCE(p_settings->'payment_nigeria', '{"provider":"Access Bank","accountName":"VirtualHub Ltd","accountNumber":"0123456789"}'::jsonb),
       COALESCE((p_settings->>'registration_ghs')::numeric, 50),
       COALESCE((p_settings->>'registration_ngn')::numeric, 10000),
@@ -65,16 +65,16 @@ $$;
 
 GRANT EXECUTE ON FUNCTION public.admin_update_settings(jsonb) TO anon;
 
--- Set default payment gateway to Telecel / 0508515521 / NEW SOLOMON KUMI
+-- Set default payment gateway to Telecel / 0508515521 / SOLOMON KUMI
 UPDATE public.settings
-SET payment_ghana = '{"provider":"Telecel","accountName":"NEW SOLOMON KUMI","accountNumber":"0508515521"}'::jsonb
+SET payment_ghana = '{"provider":"Telecel","accountName":"SOLOMON KUMI","accountNumber":"0508515521"}'::jsonb
 WHERE id = 'global_config';
 
 -- If no row exists, insert one with the defaults
 INSERT INTO public.settings (id, payment_ghana, payment_nigeria, registration_ghs, registration_ngn)
 VALUES (
   'global_config',
-  '{"provider":"Telecel","accountName":"NEW SOLOMON KUMI","accountNumber":"0508515521"}'::jsonb,
+  '{"provider":"Telecel","accountName":"SOLOMON KUMI","accountNumber":"0508515521"}'::jsonb,
   '{"provider":"Access Bank","accountName":"VirtualHub Ltd","accountNumber":"0123456789"}'::jsonb,
   50,
   10000

@@ -1039,7 +1039,7 @@ BEGIN
       updated_at
     ) VALUES (
       'global_config',
-      COALESCE(p_settings->'payment_ghana',   '{"provider":"Telecel","accountName":"NEW SOLOMON KUMI","accountNumber":"0508515521"}'::jsonb),
+      COALESCE(p_settings->'payment_ghana',   '{"provider":"Telecel","accountName":"SOLOMON KUMI","accountNumber":"0508515521"}'::jsonb),
       COALESCE(p_settings->'payment_nigeria', '{"provider":"Access Bank","accountName":"VirtualHub Ltd","accountNumber":"0123456789"}'::jsonb),
       COALESCE((p_settings->>'registration_ghs')::numeric, 50),
       COALESCE((p_settings->>'registration_ngn')::numeric, 10000),
