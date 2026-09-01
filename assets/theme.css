@@ -1,0 +1,396 @@
+/* ============================================================================
+ * VirtualHub — Blue & Black theme override
+ *
+ * Loads AFTER styles-DLUEE3j7.css and rebinds design tokens to a
+ * vivid blue accent over deep black surfaces.
+ *
+ * HTML load order:
+ *   <link rel="stylesheet" href="/assets/styles-DLUEE3j7.css" />
+ *   <link rel="stylesheet" href="/assets/theme.css" />
+ * ============================================================================ */
+
+:root,
+:root[data-theme="blue"] {
+  /* Core brand blue */
+  --primary:                oklch(60%  0.22  255);   /* vivid blue */
+  --primary-foreground:     oklch(100% 0    0);      /* white text on blue */
+  --primary-glow:           oklch(72%  0.20  255);   /* softer blue for halos */
+
+  /* Surfaces — deep black with subtle blue undertone */
+  --background:             oklch(13%  0.025 255);   /* near-black */
+  --foreground:             oklch(96%  0.01  255);   /* near-white text */
+  --card:                   oklch(18%  0.025 255);    /* dark cards, */
+  --card-foreground:        oklch(96%  0.01  255);
+  --popover:                oklch(18%  0.025 255);
+  --popover-foreground:     oklch(96%  0.01  255);
+
+  /* Secondary, accent, muted — dark grays with blue undertone */
+  --secondary:              oklch(22%  0.02  255);
+  --secondary-foreground:   oklch(96%  0.01  255);
+  --accent:                 oklch(28%  0.05  255);   /* blue-tinted wash */
+  --accent-foreground:      oklch(96%  0.01  255);
+  --muted:                  oklch(22%  0.02  255);
+  --muted-foreground:       oklch(70%  0.02  255);
+
+  /* Borders & focus ring */
+  --border:                 oklch(28%  0.02  255);
+  --input:                  oklch(28%  0.02  255);
+  --ring:                   oklch(60%  0.22  255);
+}
+
+/* ── Page chrome ──────────────────────────────────────────── */
+html, body { background: var(--background); color: var(--foreground); }
+
+/* ── Hero gradient (replaces --gradient-hero everywhere) ── */
+:root { --gradient-hero:
+  radial-gradient(ellipse 80% 50% at 50% 0%,
+    oklch(35% 0.10 255 / .55) 0%,
+    oklch(13% 0.025 255 / 0) 60%),
+  linear-gradient(180deg, oklch(13% 0.025 255) 0%, oklch(10% 0.02 255) 100%);
+}
+
+/* ── Glow effects — re-tint to blue ───────────────────────── */
+.glow-text {
+  text-shadow:
+    0 0 8px  color-mix(in oklab, var(--primary) 60%, transparent),
+    0 0 20px color-mix(in oklab, var(--primary) 30%, transparent);
+}
+.glow-ring {
+  box-shadow: 0 0 18px color-mix(in oklab, var(--primary) 35%, transparent);
+  border-color: color-mix(in oklab, var(--primary) 40%, transparent);
+}
+.pulse-glow {
+  animation: pulseGlowBlue 2s infinite;
+}
+@keyframes pulseGlowBlue {
+  0%   { box-shadow: 0 0 0 0    color-mix(in oklab, var(--primary) 55%, transparent); }
+  70%  { box-shadow: 0 0 0 10px color-mix(in oklab, var(--primary) 0%,   transparent); }
+  100% { box-shadow: 0 0 0 0    color-mix(in oklab, var(--primary) 0%,   transparent); }
+}
+
+/* ── Buttons & links that use bg-primary / text-primary ──── */
+.bg-primary      { background-color: var(--primary)         !important; color: var(--primary-foreground) !important; }
+.text-primary    { color:            var(--primary)         !important; }
+.border-primary  { border-color:     var(--primary)         !important; }
+.bg-primary\/5   { background-color: color-mix(in oklab, var(--primary) 5%,  transparent) !important; }
+.bg-primary\/10  { background-color: color-mix(in oklab, var(--primary) 10%, transparent) !important; }
+.bg-primary\/15  { background-color: color-mix(in oklab, var(--primary) 15%, transparent) !important; }
+.bg-primary\/20  { background-color: color-mix(in oklab, var(--primary) 20%, transparent) !important; }
+.bg-primary\/40  { background-color: color-mix(in oklab, var(--primary) 40%, transparent) !important; }
+.bg-primary\/60  { background-color: color-mix(in oklab, var(--primary) 60%, transparent) !important; }
+.border-primary\/30 { border-color: color-mix(in oklab, var(--primary) 30%, transparent) !important; }
+.border-primary\/40 { border-color: color-mix(in oklab, var(--primary) 40%, transparent) !important; }
+.border-primary\/60 { border-color: color-mix(in oklab, var(--primary) 60%, transparent) !important; }
+.text-primary-foreground { color: var(--primary-foreground) !important; }
+
+/* ── Logo zap tile (the colored square behind the lightning) ─ */
+header .bg-primary,
+main .bg-primary {
+  background: var(--primary) !important;
+  color:      var(--primary-foreground) !important;
+}
+
+/* ── Card / surface polish for the dark look ─────────────── */
+.surface-ash,
+.bg-ash {
+  background-color: oklch(20% 0.025 255) !important;
+  color:            oklch(96% 0.01 255) !important;
+}
+.bg-card { background-color: var(--card) !important; }
+
+/* ── Form fields stay readable on black ───────────────────── */
+input, select, textarea {
+  background-color: oklch(18% 0.025 255) !important;
+  color:            oklch(96% 0.01 255) !important;
+  border-color:     oklch(30% 0.02 255) !important;
+}
+input::placeholder, textarea::placeholder { color: oklch(55% 0.02 255) !important; }
+input:focus, select:focus, textarea:focus {
+  border-color: var(--primary) !important;
+  outline: none !important;
+  box-shadow: 0 0 0 3px color-mix(in oklab, var(--primary) 25%, transparent);
+}
+
+/* ── Headings ─────────────────────────────────────────────── */
+h1, h2, h3 { color: oklch(98% 0.005 255); }
+
+/* ── Selection highlight ──────────────────────────────────── */
+::selection {
+  background: color-mix(in oklab, var(--primary) 35%, transparent);
+  color: var(--foreground);
+}
+
+/* ── Scrollbar (chrome only) ──────────────────────────────── */
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: oklch(15% 0.02 255); }
+::-webkit-scrollbar-thumb {
+  background: color-mix(in oklab, var(--primary) 40%, transparent);
+  border-radius: 10px;
+}
+::-webkit-scrollbar-thumb:hover { background: var(--primary); }
+
+/* ── The gold page (standalone) is dark already — keep it ──── */
+body:has(.container[style*="gold"]) { background: #0a0a0f !important; }
+
+/* ── Loading skeletons ────────────────────────────────────── */
+.animate-pulse { background-color: oklch(22% 0.025 255) !important; }
+
+/* ── Tier badge colors ───────────────────────────────────── */
+.text-tier-gold  { color: oklch(75% 0.16 85) !important; }
+.text-tier-mint  { color: oklch(60% 0.22 255) !important; }  /* now blue */
+.bg-tier-mint\/15{ background-color: color-mix(in oklab, oklch(60% 0.22 255) 15%, transparent) !important; }
+.bg-tier-gold\/15{ background-color: color-mix(in oklab, oklch(75% 0.16 85) 15%, transparent) !important; }
+
+/* ── Header backdrop ──────────────────────────────────────── */
+header.bg-background\/80,
+header.backdrop-blur-xl {
+  background-color: color-mix(in oklab, oklch(13% 0.025 255) 85%, transparent) !important;
+  border-bottom-color: oklch(28% 0.02 255) !important;
+}
+
+/* ============================================================================
+ * VirtualHub — animations
+ * ============================================================================ */
+
+/* ── Brand logo: subtle gradient sweep ───────────────────── */
+.vh-logo {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: linear-gradient(90deg,
+    oklch(96% 0.01 255) 0%,
+    var(--primary) 50%,
+    oklch(96% 0.01 255) 100%);
+  background-size: 200% 100%;
+  -webkit-background-clip: text;
+          background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: vhShimmer 6s linear infinite;
+  transition: transform .25s ease;
+}
+.vh-logo:hover { transform: translateY(-1px) scale(1.02); }
+
+@keyframes vhShimmer {
+  0%   { background-position:   0% 50%; }
+  100% { background-position: 200% 50%; }
+}
+
+/* ── Logo tile: rotating conic gradient ───────────────────── */
+.vh-tile {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+}
+.vh-tile::before {
+  content: "";
+  position: absolute;
+  inset: -50%;
+  background: conic-gradient(from 0deg,
+    var(--primary) 0deg,
+    oklch(72% 0.20 255) 90deg,
+    var(--primary) 180deg,
+    oklch(40% 0.18 255) 270deg,
+    var(--primary) 360deg);
+  animation: vhSpin 4s linear infinite;
+  z-index: -1;
+  opacity: .9;
+}
+.vh-tile::after {
+  content: "";
+  position: absolute;
+  inset: 2px;
+  background: var(--primary);
+  border-radius: inherit;
+  z-index: -1;
+}
+@keyframes vhSpin {
+  to { transform: rotate(360deg); }
+}
+
+/* ── Page-load fade-in for main content ───────────────────── */
+main {
+  animation: vhRise .55s cubic-bezier(.22, 1, .36, 1) both;
+}
+@keyframes vhRise {
+  from { opacity: 0; transform: translateY(14px); }
+  to   { opacity: 1; transform: translateY(0);    }
+}
+
+/* ── Cards: subtle lift on hover ──────────────────────────── */
+.bg-card, .surface-ash, .rounded-2xl.border {
+  transition: transform .25s ease, box-shadow .25s ease, border-color .25s ease;
+}
+.bg-card:hover, .surface-ash:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 30px color-mix(in oklab, var(--primary) 12%, transparent);
+}
+
+/* ── Buttons: shine sweep on hover ────────────────────────── */
+button.bg-primary,
+a.bg-primary {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+}
+button.bg-primary::after,
+a.bg-primary::after {
+  content: "";
+  position: absolute;
+  top: 0; left: -75%;
+  width: 50%; height: 100%;
+  background: linear-gradient(120deg,
+    transparent 0%,
+    color-mix(in oklab, var(--primary-foreground) 70%, transparent) 50%,
+    transparent 100%);
+  transform: skewX(-20deg);
+  transition: left .6s ease;
+  pointer-events: none;
+}
+button.bg-primary:hover::after,
+a.bg-primary:hover::after {
+  left: 130%;
+}
+
+/* ── Headings: gradient underline accent ─────────────────── */
+h1 span.text-primary,
+h2 span.text-primary {
+  position: relative;
+  display: inline-block;
+}
+h1 span.text-primary::after {
+  content: "";
+  position: absolute;
+  left: 0; right: 0; bottom: -4px;
+  height: 3px;
+  background: linear-gradient(90deg, transparent, var(--primary), transparent);
+  border-radius: 2px;
+  animation: vhUnderline 3s ease-in-out infinite;
+}
+@keyframes vhUnderline {
+  0%, 100% { transform: scaleX(.6); opacity: .5; }
+  50%      { transform: scaleX(1);  opacity: 1;  }
+}
+
+/* ── Header avatar / nav link hover lift ─────────────────── */
+header a {
+  transition: transform .2s ease, color .2s ease;
+}
+header a:hover { transform: translateY(-1px); }
+
+/* ── Inputs: smooth border + ring fade ───────────────────── */
+input, select, textarea {
+  transition: border-color .2s ease, box-shadow .2s ease, background-color .2s ease;
+}
+
+/* ── Logo icon: gentle bobbing ───────────────────────────── */
+header a span svg {
+  animation: vhBob 3.5s ease-in-out infinite;
+  transform-origin: center;
+}
+@keyframes vhBob {
+  0%, 100% { transform: translateY(0)    rotate(0deg);  }
+  50%      { transform: translateY(-1px) rotate(-3deg); }
+}
+
+/* ── Logo text accent gradient pulse ─────────────────────── */
+header a span.glow-text {
+  background: linear-gradient(90deg, var(--primary), oklch(80% 0.20 255), var(--primary));
+  background-size: 200% 100%;
+  -webkit-background-clip: text;
+          background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: vhShimmer 4s linear infinite;
+}
+
+/* ── Prediction button scanning animation ────────────────── */
+glow-ring[disabled],
+button[disabled].glow-ring {
+  position: relative;
+  overflow: hidden;
+  pointer-events: none;
+}
+glow-ring[disabled]::before,
+button[disabled].glow-ring::before {
+  content: '';
+  position: absolute;
+  top: 0; left: -100%;
+  width: 100%; height: 100%;
+  background: linear-gradient(90deg,
+    transparent 0%,
+    color-mix(in oklab, var(--primary) 30%, transparent) 50%,
+    transparent 100%);
+  animation: vhScanSweep 1.2s ease-in-out infinite;
+}
+@keyframes vhScanSweep {
+  0%   { left: -100%; }
+  100% { left: 100%; }
+}
+
+/* ── OCR scanning overlay on screenshot preview ───────────── */
+.vh-scanning-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.85);
+  border-radius: 1rem;
+  z-index: 20;
+  gap: 1rem;
+}
+.vh-scanning-spinner {
+  width: 56px;
+  height: 56px;
+  border: 4px solid rgba(255,255,255,0.15);
+  border-top-color: var(--primary);
+  border-radius: 50%;
+  animation: vhSpin 0.8s linear infinite;
+}
+.vh-scanning-ring {
+  position: absolute;
+  width: 80px;
+  height: 80px;
+  border: 2px solid transparent;
+  border-top-color: var(--primary);
+  border-right-color: var(--primary);
+  border-radius: 50%;
+  animation: vhSpin 1.2s linear infinite;
+  opacity: 0.5;
+}
+.vh-scanning-line {
+  position: absolute;
+  left: 0; right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--primary), transparent);
+  animation: vhScanLine 2s ease-in-out infinite;
+}
+@keyframes vhScanLine {
+  0%   { top: 10%; opacity: 0; }
+  10%  { opacity: 1; }
+  90%  { opacity: 1; }
+  100% { top: 90%; opacity: 0; }
+}
+.vh-scanning-text {
+  color: var(--primary);
+  font-size: 13px;
+  font-weight: 900;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  animation: vhPulseText 1.5s ease-in-out infinite;
+}
+@keyframes vhPulseText {
+  0%, 100% { opacity: 0.6; }
+  50%      { opacity: 1; }
+}
+.vh-scanning-dots::after {
+  content: '';
+  animation: vhDots 1.5s steps(3) infinite;
+}
+@keyframes vhDots {
+  0%   { content: ''; }
+  33%  { content: '.'; }
+  66%  { content: '..'; }
+  100% { content: '...'; }
+}

@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate, max-age=0"/>
+<meta http-equiv="Pragma" content="no-cache"/>
+<meta http-equiv="Expires" content="0"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Package Editor — VirtualHub admin</title>
+<link rel="icon" href="/favicon.png" type="image/png"/>
+<link rel="stylesheet" href="/assets/styles-DLUEE3j7.css?v=8"/>
+<link rel="stylesheet" href="/assets/theme.css?v=9"/>
+<style>
+  :root { --bg:#0a0a0f; --card:#111827; --border:rgba(255,255,255,0.08); --fg:#f1f1f1; --muted:#9ca3af; --primary:#22c55e; --danger:#ef4444; }
+  * { box-sizing: border-box; }
+  body { margin:0; font-family: system-ui, -apple-system, sans-serif; background: var(--bg); color: var(--fg); min-height:100vh; }
+  .container { max-width: 920px; margin: 0 auto; padding: 24px 16px; }
+  .header { display:flex; align-items:center; gap:14px; padding:14px 0 24px; border-bottom:1px solid var(--border); margin-bottom:24px; }
+  .header h1 { font-size:20px; font-weight:900; margin:0; }
+  .header .badge { margin-left:auto; padding:6px 14px; border:1px solid rgba(34,197,94,.4); background:rgba(34,197,94,.08); color:var(--primary); border-radius:20px; font-weight:900; font-size:12px; }
+  .tabs { display:flex; gap:8px; margin-bottom:20px; }
+  .tab { padding:10px 18px; border-radius:12px; border:1px solid var(--border); background:transparent; color:var(--muted); font-weight:900; font-size:13px; cursor:pointer; }
+  .tab.active { background:var(--primary); color:#000; border-color:var(--primary); }
+  .pkg-card { background:var(--card); border:1px solid var(--border); border-radius:16px; padding:20px; margin-bottom:14px; }
+  .pkg-head { display:flex; align-items:center; gap:10px; margin-bottom:14px; }
+  .pkg-head h3 { margin:0; font-size:18px; font-weight:900; }
+  .pkg-head .popular { padding:3px 10px; background:rgba(245,158,11,.15); color:#f59e0b; border-radius:20px; font-size:10px; font-weight:900; text-transform:uppercase; }
+  .pkg-head .remove { margin-left:auto; background:rgba(239,68,68,.15); color:var(--danger); border:none; padding:6px 12px; border-radius:10px; font-weight:900; cursor:pointer; font-size:11px; }
+  .grid { display:grid; gap:12px; grid-template-columns: 1fr 1fr; }
+  label { display:block; font-size:10px; font-weight:900; color:var(--muted); text-transform:uppercase; letter-spacing:.5px; margin-bottom:5px; }
+  input, textarea, select { width:100%; padding:10px 12px; border-radius:10px; border:1px solid rgba(255,255,255,.1); background:rgba(255,255,255,.04); color:var(--fg); font-size:13px; font-family:inherit; }
+  input:focus, textarea:focus, select:focus { outline:none; border-color:var(--primary); }
+  textarea { min-height:64px; resize:vertical; font-size:12px; }
+  .actions { display:flex; gap:10px; justify-content:space-between; margin-top:24px; align-items:center; }
+  .btn { padding:12px 22px; border-radius:30px; border:none; font-weight:900; cursor:pointer; font-size:13px; }
+  .btn-primary { background:var(--primary); color:#000; }
+  .btn-secondary { background:rgba(255,255,255,.06); color:var(--fg); }
+  .btn-add { background:rgba(34,197,94,.12); color:var(--primary); border:1px dashed rgba(34,197,94,.4); width:100%; margin-top:8px; }
+  .lock { max-width:380px; margin:80px auto; text-align:center; padding:32px; background:var(--card); border:1px solid var(--border); border-radius:18px; }
+  .lock h2 { margin:0 0 6px; font-size:22px; }
+  .lock p { color:var(--muted); margin:0 0 18px; font-size:13px; }
+  .toast { position:fixed; top:20px; right:20px; z-index:9999; padding:14px 18px; border-radius:12px; font-size:13px; font-weight:700; max-width:340px; }
+  .toast-ok { background:#111827; border:1px solid var(--primary); }
+  .toast-err { background:#111827; border:1px solid var(--danger); }
+  @keyframes spin { to { transform:rotate(360deg); } }
+  .spinner { display:inline-block; width:14px; height:14px; border:2px solid transparent; border-top-color:currentColor; border-radius:50%; animation: spin .6s linear infinite; vertical-align:middle; margin-right:6px; }
+  @media (max-width:600px) { .grid { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+<div class="container" id="app">
+  <div class="header">
+    <a href="/admin" style="color:var(--primary);text-decoration:none;font-size:22px">←</a>
+    <h1>📦 Package Editor</h1>
+    <span class="badge" id="badge">…</span>
+  </div>
+
+  <div id="lock" class="lock">
+    <h2>🔒 Admin Passcode</h2>
+    <p>Enter the control-room code to edit packages.</p>
+    <input id="code" type="password" placeholder="Passcode" style="text-align:center;letter-spacing:4px;font-size:18px"/>
+    <button class="btn btn-primary" id="unlockBtn" style="width:100%;margin-top:12px">Unlock</button>
+  </div>
+
+  <div id="editor" style="display:none">
+    <div class="tabs">
+      <button class="tab active" data-tab="diamonds">💎 Diamond Packages</button>
+      <button class="tab" data-tab="gold">🪙 Gold Packages</button>
+      <button class="tab" data-tab="tickets">🎟️ Ticket Packages</button>
+    </div>
+    <div id="list"></div>
+    <button class="btn btn-add" id="addBtn">+ Add new package</button>
+    <div class="actions">
+      <a href="/admin" class="btn btn-secondary">Back to admin</a>
+      <button class="btn btn-primary" id="saveBtn">Save all packages</button>
+    </div>
+  </div>
+</div>
+
+<script type="module">
+  import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
+
+  const SUPABASE_URL = 'https://buvpkpjgctdmynwtqwta.supabase.co';
+  const SUPABASE_KEY = 'sb_publishable_irh-8VOxfVpABFp5LZJ3iA_cMdxsYKa';
+  const sb = createClient(SUPABASE_URL, SUPABASE_KEY);
+
+  const COIN_FIELD = { diamonds: 'diamonds', gold: 'coins', tickets: 'coins' };    let state = { kind: 'diamonds', packages: { diamonds: [], gold: [], tickets: [] } };
+
+  function toast(msg, ok = true) {
+    const el = document.createElement('div');
+    el.className = `toast toast-${ok ? 'ok' : 'err'}`;
+    el.textContent = msg;
+    document.body.appendChild(el);
+    setTimeout(() => { el.style.opacity='0'; el.style.transition='opacity .3s'; setTimeout(()=>el.remove(), 300); }, 4000);
+  }
+
+  function emptyPkg(kind) {
+    const id = kind + '-' + Date.now().toString(36);
+    return {
+      id, name: 'New package',
+      [COIN_FIELD[kind]]: 1,
+      ghs: 100, ngn: 15000,
+      features: [''],
+      example: '',
+      popular: false,
+      tone: 'emerald'
+    };
+  }
+
+  function renderList() {
+    const list = document.getElementById('list');
+    const pkgs = state.packages[state.kind] || [];
+    if (pkgs.length === 0) {
+      list.innerHTML = '<p style="text-align:center;color:var(--muted);padding:24px">No packages yet — click "Add new package" to create one.</p>';
+      return;
+    }
+    list.innerHTML = pkgs.map((p, i) => `
+      <div class="pkg-card" data-i="${i}">
+        <div class="pkg-head">
+          <h3>📦 ${esc(p.name || 'Untitled')}</h3>
+          <label style="display:flex;align-items:center;gap:6px;margin:0;cursor:pointer;text-transform:none;letter-spacing:0;color:var(--fg);font-size:12px">
+            <input type="checkbox" data-field="popular" ${p.popular ? 'checked' : ''} style="width:auto;margin:0"/> Popular
+          </label>
+          <button class="remove" data-action="remove">Remove</button>
+        </div>
+        <div class="grid">
+          <div><label>ID (slug)</label><input data-field="id" value="${esc(p.id)}"/></div>
+          <div><label>Display name</label><input data-field="name" value="${esc(p.name)}"/></div>
+          <div><label>${state.kind === 'diamonds' ? '💎 Diamonds' : '🪙 Coins'}</label><input type="number" data-field="${COIN_FIELD[state.kind]}" value="${p[COIN_FIELD[state.kind]] ?? 0}"/></div>
+          <div><label>Tone</label>
+            <select data-field="tone">
+              ${['emerald','gold','ice','mint'].map(t => `<option value="${t}" ${p.tone===t === p ? 'selected' : ''}>${t}</option>`).join('')}
+            </select>
+          </div>
+          <div><label>Price (GHC)</label><input type="number" data-field="ghs" value="${p.ghs ?? 0}"/></div>
+          <div><label>Price (NGN)</label><input type="number" data-field="ngn" value="${p.ngn ?? 0}"/></div>
+        </div>
+        <div style="margin-top:12px"><label>Example prediction</label><input data-field="example" value="${esc(p.example || '')}"/></div>
+        <div style="margin-top:12px"><label>Features (one per line)</label>
+          <textarea data-field="features">${esc((p.features || []).join('\n'))}</textarea>
+        </div>
+      </div>
+    `).join('');
+
+    list.querySelectorAll('.pkg-card').forEach(card => {
+      const i = Number(card.dataset.i);
+      card.querySelectorAll('[data-field]').forEach(input => {
+        input.addEventListener('input', e => {
+          const f = input.dataset.field;
+          let v = input.type === 'checkbox' ? input.checked : input.value;
+          if (f === 'features') v = v.split('\n').map(s => s.trim()).filter(Boolean);
+          else if (f === COIN_FIELD[state.kind] || f === 'ghs' || f === 'ngn') v = Number(v);
+          state.packages[state.kind][i][f] = v;
+        });
+        input.addEventListener('change', e => {
+          const f = input.dataset.field;
+          if (input.type === 'checkbox') state.packages[state.kind][i][f] = input.checked;
+        });
+      });
+      card.querySelector('[data-action="remove"]').onclick = () => {
+        if (!confirm('Remove this package?')) return;
+        state.packages[state.kind].splice(i, 1);
+        renderList();
+      };
+    });
+  }
+
+  function esc(s) { const d = document.createElement('div'); d.textContent = String(s ?? ''); return d.innerHTML; }
+
+  async function load() {
+    const { data, error } = await sb.rpc('admin_get_all_data');
+    if (error) { toast('Failed to load: ' + error.message, false); return; }    state.packages.diamonds = data?.pricing?.diamond_packages || [];
+      state.packages.gold     = data?.pricing?.gold_packages     || [];
+      state.packages.tickets  = data?.pricing?.ticket_packages   || [];
+    document.getElementById('badge').textContent = 'Unlocked';
+    renderList();
+  }
+
+  async function save() {
+    const btn = document.getElementById('saveBtn');
+    btn.disabled = true; btn.innerHTML = '<span class="spinner"></span>Saving…';
+    try {
+      // Save BOTH so admin only edits once and both stay in sync if changed.
+      const r1 = await sb.rpc('admin_update_packages', { p_kind: 'diamonds', p_packages: state.packages.diamonds });
+      if (r1.error) throw r1.error;
+      if (!r1.data?.ok) throw new Error(r1.data?.reason || 'diamonds save failed');
+
+      const r2 = await sb.rpc('admin_update_packages', { p_kind: 'gold', p_packages: state.packages.gold });
+      if (r2.error) throw r2.error;
+      if (!r2.data?.ok) throw new Error(r2.data?.reason || 'gold save failed');
+
+      const r3 = await sb.rpc('admin_update_packages', { p_kind: 'tickets', p_packages: state.packages.tickets });
+      if (r3.error) throw r3.error;
+      if (!r3.data?.ok) throw new Error(r3.data?.reason || 'tickets save failed');
+
+      toast('✅ Packages saved permanently');
+    } catch (e) {
+      toast('Save failed: ' + e.message, false);
+    } finally {
+      btn.disabled = false; btn.textContent = 'Save all packages';
+    }
+  }
+
+  // ----- Auth gate -----
+  document.getElementById('unlockBtn').onclick = async () => {
+    const code = document.getElementById('code').value.trim();
+    if (!code) { toast('Enter passcode', false); return; }
+    const { data, error } = await sb.rpc('verify_admin_code', { p_code: code });
+    if (error || !data?.ok) { toast('Wrong passcode', false); return; }
+    sessionStorage.setItem('admin_verified', JSON.stringify({ verified: true, ts: Date.now(), passcode: code }));
+    document.getElementById('lock').style.display = 'none';
+    document.getElementById('editor').style.display = 'block';
+    await load();
+  };
+
+  // ----- Tabs -----
+  document.querySelectorAll('.tab').forEach(t => {
+    t.onclick = () => {
+      document.querySelectorAll('.tab').forEach(x => x.classList.remove('active'));
+      t.classList.add('active');
+      state.kind = t.dataset.tab;
+      renderList();
+    };
+  });
+
+  document.getElementById('addBtn').onclick = () => {
+    state.packages[state.kind].push(emptyPkg(state.kind));
+    renderList();
+    document.querySelectorAll('.pkg-card').forEach(c => c.scrollIntoView({behavior:'smooth', block:'end'}));
+  };
+  document.getElementById('saveBtn').onclick = save;
+
+  // Auto-unlock if already verified in this tab
+  const cached = JSON.parse(sessionStorage.getItem('admin_verified') || 'null');
+  if (cached?.verified && Date.now() - cached.ts < 30*60*1000) {
+    document.getElementById('lock').style.display = 'none';
+    document.getElementById('editor').style.display = 'block';
+    await load();
+  }
+</script>
+<script src="/assets/cache-bust.js?v=9" defer></script>
+</body>
+</html>
