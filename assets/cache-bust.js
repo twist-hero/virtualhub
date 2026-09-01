@@ -20,7 +20,7 @@
     if (hn === "localhost" || hn === "127.0.0.1" || hn === "0.0.0.0") return;
   } catch (_) { /* continue */ }
 
-  var VERSION = "v10"; // keep in sync with the ?v=N query strings in HTML
+  var VERSION = "v11"; // keep in sync with the ?v=N query strings in HTML
 
   function log(kind, msg) {
     var prefix = "%c[VirtualHub cache " + kind + "]";

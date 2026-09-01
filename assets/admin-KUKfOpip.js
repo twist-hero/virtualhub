@@ -2674,7 +2674,7 @@ function Oe() {
                     }), (0,
                     G.jsx)(N, {
                         value: _proofModal?.reason ?? ``,
-                        onChange: e => M(t => ({
+                        onChange: e => _setProofModal(t => ({
                             ...t,
                             reason: e.target.value
                         })),
