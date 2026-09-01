@@ -471,12 +471,12 @@ function De() {
                     try {
                         const result = await supabaseClient.rpc('verify_admin_code', { p_code: e.trim() });
                         if (result.error || !result.data) {
-                            u.error(`Could not verify the access code`),
+                            showToast(`Could not verify the access code`, `error`),
                             t(``);
                             return
                         }
                         if (result.data.locked) {
-                            u.error(result.data.reason || `Account locked. Too many failed attempts.`);
+                            showToast(result.data.reason || `Account locked. Too many failed attempts.`, `error`);
                             t(``);
                             return
                         }
@@ -485,7 +485,7 @@ function De() {
                             const msg = remaining !== undefined
                                 ? `${result.data.reason || 'Incorrect code'}. ${remaining} attempt(s) remaining.`
                                 : `Incorrect access code`;
-                            u.error(msg);
+                            showToast(msg, `error`);
                             t(``);
                             return
                         }
@@ -500,7 +500,7 @@ function De() {
                             queryKey: [`admin-session`]
                         })
                     } catch {
-                        u.error(`Could not verify the access code`)
+                        showToast(`Could not verify the access code`, `error`)
                     } finally {
                         i(!1)
                     }
@@ -1559,35 +1559,35 @@ function Oe() {
       , h = L({
         mutationFn: r(te),
         onSuccess: () => {
-            u.success(`Diamond order updated`),
+            showToast(`Diamond order updated`),
             l.invalidateQueries({
                 queryKey: [`admin-data`]
             })
         }
         ,
-        onError: () => u.error(`Could not update this diamond order`)
+        onError: () => showToast(`Could not update this diamond order`, `error`)
     })
       , x = L({
         mutationFn: r(ne),
         onSuccess: () => {
-            u.success(`Payment updated`),
+            showToast(`Payment updated`),
             l.invalidateQueries({
                 queryKey: [`admin-data`]
             })
         }
         ,
-        onError: () => u.error(`Could not update this payment`)
+        onError: () => showToast(`Could not update this payment`, `error`)
     })
       , S = L({
         mutationFn: r(oe),
         onSuccess: () => {
-            u.success(`Member updated`),
+            showToast(`Member updated`),
             l.invalidateQueries({
                 queryKey: [`admin-data`]
             })
         }
         ,
-        onError: () => u.error(`Could not update this member`)
+        onError: () => showToast(`Could not update this member`, `error`)
     })
       , re = r(le)
       , se = r(ce)
@@ -1662,7 +1662,7 @@ function Oe() {
             }
         });
         if (!t.url) {
-            u.error(`No screenshot on this submission`);
+            showToast(`No screenshot on this submission`, `error`);
             return
         }
         _w(t.url)
@@ -1674,7 +1674,7 @@ function Oe() {
             }
         });
         if (!t.url) {
-            u.error(`No screenshot on this order`);
+            showToast(`No screenshot on this order`, `error`);
             return
         }
         _w(t.url)
@@ -2689,7 +2689,7 @@ function Oe() {
                         variant: _proofModal?.tone === `approve` ? `default` : `destructive`,
                         onClick: () => {
                             if (_proofModal?.reasonRequired && !_proofModal.reason?.trim()) {
-                                u.error(`Please enter a reason for rejection`);
+                                showToast(`Please enter a reason for rejection`, `error`);
                                 return
                             }
                             _proofModal?.run(_proofModal.reason),
