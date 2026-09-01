@@ -263,7 +263,7 @@ export async function n(props) {
 
 // POST: submit payment proof / order proof (imported as h in checkout)
 export async function h(props) {
-  const { country, method, amount, currency, senderName, senderNumber, txnId, fileName, fileBase64, packageName, diamonds } = props?.data ?? {};
+  const { country, method, amount, currency, senderName, senderNumber, txnId, fileName, fileBase64, packageName, diamonds, assetType } = props?.data ?? {};
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) throw new Error("Unauthorized");
 
@@ -298,7 +298,7 @@ export async function h(props) {
         txn_id: txnId,
         screenshot_path: screenshotPath,
         status: 'pending',
-        asset_type: 'diamond',
+        asset_type: assetType || 'diamond',
         ocr_name: ocrName
       })
       .select()
