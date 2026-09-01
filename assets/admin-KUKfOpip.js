@@ -6,10 +6,16 @@ import {C as SupabaseClient, S as a, _ as o, a as s, c, d as l, i as u, k as d, 
 var supabaseClient = SupabaseClient;
 // Simple success toast for admin actions
 function showToast(msg, kind) {
-  let c = document.getElementById("admin-toasts") || Object.assign(document.createElement("div"), {id:"admin-toasts"});
-  if (!c.id) { c.id = "admin-toasts"; Object.assign(c.style, {position:"fixed",top:"80px",right:"16px",zIndex:"99999",display:"flex",flexDirection:"column",gap:"8px",maxWidth:"340px"}); document.body.appendChild(c); }
+  var c = document.getElementById("admin-toasts");
+  if (!c) {
+    c = document.createElement("div");
+    c.id = "admin-toasts";
+    Object.assign(c.style, {position:"fixed",top:"80px",right:"16px",zIndex:"99999",display:"flex",flexDirection:"column",gap:"8px",maxWidth:"340px"});
+    document.body.appendChild(c);
+  }
   let bg = kind === "error" ? "#dc2626" : kind === "warning" ? "#f59e0b" : "#10b981";
-  let el = Object.assign(document.createElement("div"), {textContent: msg});
+  let el = document.createElement("div");
+  el.textContent = msg;
   Object.assign(el.style, {background:bg,color:"#fff",padding:"10px 16px",borderRadius:"12px",fontSize:"13px",fontWeight:"700",fontFamily:"system-ui",boxShadow:"0 4px 20px rgba(0,0,0,0.3)",pointerEvents:"auto",opacity:"0",transform:"translateX(20px)",transition:"all 0.3s ease"});
   c.appendChild(el);
   requestAnimationFrame(() => { el.style.opacity="1"; el.style.transform="translateX(0)"; });
@@ -1559,35 +1565,26 @@ function Oe() {
       , h = L({
         mutationFn: r(te),
         onSuccess: () => {
-            showToast(`Diamond order updated`),
-            l.invalidateQueries({
-                queryKey: [`admin-data`]
-            })
-        }
-        ,
-        onError: () => showToast(`Could not update this diamond order`, `error`)
+            l.invalidateQueries({ queryKey: [`admin-data`] });
+            showToast(`Diamond order updated`);
+        },
+        onError: (err) => { showToast(`Could not update this diamond order: ` + (err?.message || err), `error`); }
     })
       , x = L({
         mutationFn: r(ne),
         onSuccess: () => {
-            showToast(`Payment updated`),
-            l.invalidateQueries({
-                queryKey: [`admin-data`]
-            })
-        }
-        ,
-        onError: () => showToast(`Could not update this payment`, `error`)
+            l.invalidateQueries({ queryKey: [`admin-data`] });
+            showToast(`Payment updated`);
+        },
+        onError: (err) => { showToast(`Could not update this payment: ` + (err?.message || err), `error`); }
     })
       , S = L({
         mutationFn: r(oe),
         onSuccess: () => {
-            showToast(`Member updated`),
-            l.invalidateQueries({
-                queryKey: [`admin-data`]
-            })
-        }
-        ,
-        onError: () => showToast(`Could not update this member`, `error`)
+            l.invalidateQueries({ queryKey: [`admin-data`] });
+            showToast(`Member updated`);
+        },
+        onError: (err) => { showToast(`Could not update this member: ` + (err?.message || err), `error`); }
     })
       , re = r(le)
       , se = r(ce)

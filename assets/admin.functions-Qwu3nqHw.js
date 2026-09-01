@@ -4,8 +4,8 @@ import { G as reactRaw, o as jsxRaw, q as interop } from "./useStore-BI3_Wmfo.js
 import { classifyError, showErrorToast, withRetry } from "./error-utils.js";
 // Success toast for admin actions
 function showSuccessToast(msg) {
-  let c = document.getElementById("admin-toasts") || Object.assign(document.createElement("div"), {id:"admin-toasts"});
-  if (!c.id) { c.id = "admin-toasts"; Object.assign(c.style, {position:"fixed",top:"80px",right:"16px",zIndex:"99999",display:"flex",flexDirection:"column",gap:"8px",maxWidth:"340px"}); document.body.appendChild(c); }
+  var c = document.getElementById("admin-toasts");
+  if (!c) { c = document.createElement("div"); c.id = "admin-toasts"; Object.assign(c.style, {position:"fixed",top:"80px",right:"16px",zIndex:"99999",display:"flex",flexDirection:"column",gap:"8px",maxWidth:"340px"}); document.body.appendChild(c); }
   let el = Object.assign(document.createElement("div"), {textContent: msg});
   Object.assign(el.style, {background:"#10b981",color:"#fff",padding:"10px 16px",borderRadius:"12px",fontSize:"13px",fontWeight:"700",fontFamily:"system-ui",boxShadow:"0 4px 20px rgba(0,0,0,0.3)",pointerEvents:"auto",opacity:"0",transform:"translateX(20px)",transition:"all 0.3s ease"});
   c.appendChild(el);
