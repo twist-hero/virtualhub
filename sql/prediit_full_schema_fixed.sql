@@ -1014,14 +1014,14 @@ begin
           (p_settings->>'spin_cost')::int,
           now())
   on conflict (id) do update set
-    payment_ghana     = excluded.payment_ghana,
-    payment_nigeria   = excluded.payment_nigeria,
-    registration_ghs  = excluded.registration_ghs,
-    registration_ngn  = excluded.registration_ngn,
-    prediction_cost   = excluded.prediction_cost,
-    efootball_cost    = excluded.efootball_cost,
-    efootball_expiry  = excluded.efootball_expiry,
-    spin_cost         = excluded.spin_cost,
+    payment_ghana     = COALESCE(excluded.payment_ghana,    public.settings.payment_ghana),
+    payment_nigeria   = COALESCE(excluded.payment_nigeria,  public.settings.payment_nigeria),
+    registration_ghs  = COALESCE(excluded.registration_ghs, public.settings.registration_ghs),
+    registration_ngn  = COALESCE(excluded.registration_ngn, public.settings.registration_ngn),
+    prediction_cost   = COALESCE(excluded.prediction_cost,  public.settings.prediction_cost),
+    efootball_cost    = COALESCE(excluded.efootball_cost,   public.settings.efootball_cost),
+    efootball_expiry  = COALESCE(excluded.efootball_expiry, public.settings.efootball_expiry),
+    spin_cost         = COALESCE(excluded.spin_cost,        public.settings.spin_cost),
     updated_at        = now();
   return public.json_ok();
 end; $$;
