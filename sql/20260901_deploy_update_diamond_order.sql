@@ -219,4 +219,37 @@ $$;
 
 GRANT EXECUTE ON FUNCTION public.update_payment_proof(uuid, text, text) TO anon;
 
-SELECT '✅ All functions deployed successfully — credit/reject should now work' AS result;
+-- 9. Proof URL functions (for View Proof button)
+CREATE OR REPLACE FUNCTION public.admin_get_order_proof_url(p_order_id uuid)
+RETURNS jsonb
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public
+AS $$
+DECLARE v_path text;
+BEGIN
+  SELECT screenshot_path INTO v_path FROM public.orders WHERE id = p_order_id;
+  RETURN jsonb_build_object('path', v_path);
+END;
+$$;
+
+GRANT EXECUTE ON FUNCTION public.admin_get_order_proof_url(uuid) TO anon;
+
+CREATE OR REPLACE FUNCTION public.admin_get_payment_proof_url(p_payment_id uuid)
+RETURNS jsonb
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public
+AS $$
+DECLARE v_path text;
+BEGIN
+  SELECT screenshot_path INTO v_path FROM public.payments WHERE id = p_payment_id;
+  RETURN jsonb_build_object('path', v_path);
+END;
+$$;
+
+GRANT EXECUTE ON FUNCTION public.admin_get_payment_proof_url(uuid) TO anon;
+
+SELECT '✅ All functions deployed successfully — credit/reject/view-proof should now work' AS result;
+
+-- Note: admin_get_all_data is already in prediit_full_schema_fixed.sql
