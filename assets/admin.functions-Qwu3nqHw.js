@@ -296,6 +296,8 @@ export async function h(props) {
         currency,
         method,
         txn_id: txnId,
+        sender_name: senderName,
+        sender_number: senderNumber,
         screenshot_path: screenshotPath,
         status: 'pending',
         asset_type: assetType || 'diamond',

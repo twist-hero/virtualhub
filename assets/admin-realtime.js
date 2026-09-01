@@ -152,13 +152,32 @@
 
   /* ── Live badge in header ───────────────────────────── */
 
+  /* ── Connection state tracker ──────────────────────── */
+  let _connState = "loading"; // loading | connected | degraded | disconnected
+  const _connLabel = { loading: "CONNECTING", connected: "LIVE", degraded: "DEGRADED", disconnected: "OFFLINE" };
+  const _connColor = { loading: "#fbbf24", connected: "#00ff88", degraded: "#fbbf24", disconnected: "#ef4444" };
+
+  function setConnectionState(state) {
+    _connState = state;
+    const badge = document.getElementById("ve-live");
+    if (!badge) return;
+    const dot  = badge.querySelector("span:first-child");
+    const text = badge.childNodes[badge.childNodes.length - 1];
+    const color = _connColor[state];
+    badge.style.color = color;
+    badge.style.borderColor = color.replace("#", "rgba(").replace(/([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})/, (_, r, g, b) => `${parseInt(r,16)},${parseInt(g,16)},${parseInt(b,16)},.3)`);
+    badge.style.background  = color.replace("#", "rgba(").replace(/([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})/, (_, r, g, b) => `${parseInt(r,16)},${parseInt(g,16)},${parseInt(b,16)},.06)`);
+    if (dot) { dot.style.background = color; dot.style.animation = state === "connected" ? "vePulse 2s infinite" : "none"; }
+    if (text) text.textContent = " " + _connLabel[state];
+  }
+
   function addLiveBadge() {
     const header = document.querySelector("header");
     if (!header) return;
     const badge = document.createElement("span");
     badge.id = "ve-live";
-    badge.style.cssText = "display:inline-flex;align-items:center;gap:5px;font-size:10px;font-weight:800;color:#00ff88;padding:5px 10px;border-radius:20px;border:1px solid rgba(0,255,136,.3);background:rgba(0,255,136,.06);letter-spacing:.5px";
-    badge.innerHTML = '<span style="width:7px;height:7px;border-radius:50%;background:#00ff88;animation:vePulse 2s infinite"></span> LIVE';
+    badge.style.cssText = "display:inline-flex;align-items:center;gap:5px;font-size:10px;font-weight:800;color:#fbbf24;padding:5px 10px;border-radius:20px;border:1px solid rgba(251,191,36,.3);background:rgba(251,191,36,.06);letter-spacing:.5px;transition:all .3s ease";
+    badge.innerHTML = '<span style="width:7px;height:7px;border-radius:50%;background:#fbbf24"></span> CONNECTING';
     header.querySelector("div")?.appendChild(badge);
   }
 
@@ -210,10 +229,19 @@
 
   async function init() {
     injectStyles();
-    try {
-      await loadScript("/assets/supabase.min.js");
-    } catch (_) {
-      await loadScript("https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js");
+    // Load the Supabase UMD client — try local first, then CDN fallbacks
+    const cdnUrls = [
+      "/assets/supabase.min.js",
+      "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js",
+      "https://unpkg.com/@supabase/supabase-js@2/dist/umd/supabase.min.js"
+    ];
+    let loaded = false;
+    for (const url of cdnUrls) {
+      try { await loadScript(url); loaded = true; break; } catch (_) { /* try next */ }
+    }
+    if (!loaded || !window.supabase) {
+      console.error("[VirtualHub] ❌ Could not load Supabase client — realtime disabled");
+      return;
     }
 
     const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
@@ -237,9 +265,38 @@
           if (findQueryClient() || tries > 5) clearInterval(retry);
         }, 2000);
       }
-    }, 1000);
+    }, 1000);    /* ── Subscription status logging ─────────────────── */
+    const TOTAL_CHANNELS = 6; // payments, orders, profiles, gold, efootball, spin
+    let _subOk = 0, _subFail = 0;
+    function logSubStatus(channel, status) {
+      if (status === 'SUBSCRIBED') {
+        _subOk++;
+        console.log(`%c[VirtualHub] ✅ ${channel} subscribed (${_subOk}/${_subOk+_subFail})`, 'color:#00ff88;font-weight:bold');
+        // All channels connected → green LIVE
+        if (_subOk >= TOTAL_CHANNELS) setConnectionState('connected');
+        // Some connected, some failed → yellow DEGRADED
+        else if (_subOk > 0 && _subFail > 0) setConnectionState('degraded');
+      } else if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
+        _subFail++;
+        console.warn(`%c[VirtualHub] ⚠️ ${channel} ${status} — will retry via polling`, 'color:#fbbf24;font-weight:bold');
+        if (_subFail >= TOTAL_CHANNELS) setConnectionState('disconnected');
+        else if (_subOk > 0) setConnectionState('degraded');
+      } else if (status === 'CLOSED' || status === 'CHANNEL_CLOSED') {
+        _subFail++;
+        setConnectionState('disconnected');
+      }
+    }
+
+    // After 5s, if no subscriptions have confirmed, show degraded
+    setTimeout(() => {
+      if (_connState === 'loading') setConnectionState(_subOk > 0 ? 'connected' : 'degraded');
+    }, 5000);
+
+    /* ── Fallback heartbeat: force-invalidate every 15s ─ */
+    setInterval(() => { invalidateQueries(); }, 15000);
 
     /* ── New payment proofs (registrations) ────────────── */
+
     sb.channel("admin-payments")
       .on("postgres_changes", { event: "INSERT", schema: "public", table: "payments" }, (p) => {
         const r = p.new;
@@ -266,7 +323,7 @@
         pendingCount = Math.max(0, pendingCount - 1); updateCounter();
         ping(); invalidateQueries();
       })
-      .subscribe();
+      .subscribe((status) => logSubStatus('admin-payments', status));
 
     /* ── New diamond / gold orders ─────────────────────── */
     sb.channel("admin-orders")
@@ -297,7 +354,7 @@
         pendingCount = Math.max(0, pendingCount - 1); updateCounter();
         ping(); invalidateQueries();
       })
-      .subscribe();
+      .subscribe((status) => logSubStatus('admin-orders', status));
 
     /* ── New member registrations ──────────────────────── */
     sb.channel("admin-profiles")
@@ -318,7 +375,7 @@
           toast("🪙 Gold Updated", `${n.email}: ${o.gold} → ${n.gold}`, "info");
         ping(); invalidateQueries();
       })
-      .subscribe();
+      .subscribe((status) => logSubStatus('admin-profiles', status));
 
     /* ── Gold transactions ─────────────────────────────── */
     sb.channel("admin-gold")
@@ -327,7 +384,7 @@
         toast("🪙 Gold Transaction", `${r.kind}: ${r.amount} gold — ${r.reason}`, "info");
         ping(); invalidateQueries();
       })
-      .subscribe();
+      .subscribe((status) => logSubStatus('admin-gold', status));
 
     /* ── Booking code requests ─────────────────────────── */
     sb.channel("admin-efootball")
@@ -337,7 +394,7 @@
         pendingCount++; updateCounter();
         ping(); invalidateQueries();
       })
-      .subscribe();
+      .subscribe((status) => logSubStatus('admin-efootball', status));
 
     /* ── Spin signals ──────────────────────────────────── */
     sb.channel("admin-spin")
@@ -346,7 +403,7 @@
         toast("🎰 New Spin Signal", `Direction: ${r.direction} — Confidence: ${r.confidence}%`, "info");
         ping(); invalidateQueries();
       })
-      .subscribe();
+      .subscribe((status) => logSubStatus('admin-spin', status));
   }
 
   /* ── Boot ───────────────────────────────────────────── */

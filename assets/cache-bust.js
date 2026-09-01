@@ -1,5 +1,5 @@
 /* ============================================================================
- * VirtualHub — Cache clearer (v9)
+ * VirtualHub — Cache clearer (v10)
  *
  * Forces every browser visiting the site to drop the previously-cached bundles
  * (CSS, JS, HTML) and re-fetch fresh copies from the server. Fixes the
@@ -20,7 +20,7 @@
     if (hn === "localhost" || hn === "127.0.0.1" || hn === "0.0.0.0") return;
   } catch (_) { /* continue */ }
 
-  var VERSION = "v9"; // keep in sync with the ?v=N query strings in HTML
+  var VERSION = "v10"; // keep in sync with the ?v=N query strings in HTML
 
   function log(kind, msg) {
     var prefix = "%c[VirtualHub cache " + kind + "]";

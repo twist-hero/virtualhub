@@ -1,5 +1,5 @@
 import { C as supabase } from "./index-sG8SpmM9.js";
-import { classifyError, showErrorToast } from "./error-utils.js";
+import { classifyError, showErrorToast, withRetry } from "./error-utils.js";
 
 // GET: prediction-home
 export async function t() {
@@ -276,4 +276,77 @@ export async function r(props) {
   }
 
   return { ok: true };
+}
+
+// POST: submit diamond order
+// OCR: Extract sender name from payment screenshot using Gemini Vision
+async function callPaymentOCR(fileBase64, mime) {
+  try {
+    const { data: keyData } = await supabase.rpc('get_gemini_key').maybeSingle();
+    const geminiKey = keyData?.gemini_api_key;
+    if (!geminiKey || !fileBase64) return null;
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash-lite:generateContent?key=${geminiKey}`;
+    const payload = { contents: [{ parts: [
+      { text: 'This is a payment receipt or mobile money screenshot. Extract the SENDER NAME (the person who sent the money). Return ONLY the name as plain text. If undetectable, return NONE.' },
+      { inlineData: { mimeType: mime || 'image/png', data: fileBase64 } }
+    ] }] };
+    const res = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+    if (!res.ok) return null;
+    const json = await res.json();
+    const txt = json?.candidates?.[0]?.content?.parts?.[0]?.text?.trim() ?? '';
+    if (!txt || txt.toUpperCase() === 'NONE') return null;
+    return txt.replace(/["']/g, '').trim();
+  } catch (_) { return null; }
+}
+
+export async function o(props) {
+  const { packageId, packageName, diamonds, country, method, amount, currency, txnId, senderName, senderNumber, fileName, fileBase64 } = props?.data ?? {};
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) { showErrorToast('Please log in to continue.', 'error'); throw new Error("Unauthorized"); }
+
+  // Upload screenshot
+  const fileBytes = Uint8Array.from(atob(fileBase64), c => c.charCodeAt(0));
+  const screenshotPath = `${user.id}/${Date.now()}-${fileName}`;
+
+  // OCR: scan screenshot for real sender name
+  let ocrName = null;
+  try { ocrName = await callPaymentOCR(fileBase64, 'image/png'); } catch (_) {}
+
+  // Upload screenshot (non-blocking: order always saved)
+  let uploadFailed = false;
+  try {
+    const { error: uploadErr } = await withRetry(() =>
+      supabase.storage.from('screenshot-proofs').upload(screenshotPath, fileBytes, { contentType: 'image/png' })
+    , { maxRetries: 2, delayMs: 1000 });
+    if (uploadErr) { uploadFailed = true; screenshotPath = null; }
+  } catch (_) { uploadFailed = true; screenshotPath = null; }
+  if (uploadFailed) showErrorToast('Screenshot upload failed — order saved without image.', 'warning');
+
+  const { data, error } = await supabase
+    .from('orders')
+    .insert({
+      user_id: user.id,
+      email: user.email,
+      package_name: packageName,
+      diamonds: Number(diamonds),
+      amount: Number(amount),
+      currency,
+      method,
+      txn_id: txnId || null,
+      sender_name: senderName,
+      sender_number: senderNumber,
+      screenshot_path: screenshotPath,
+      status: 'pending',
+      asset_type: 'diamond',
+      ocr_name: ocrName
+    })
+    .select()
+    .single();
+
+  if (error) {
+    const { userMessage } = classifyError(error);
+    showErrorToast('Diamond order failed: ' + userMessage, 'error');
+    throw error;
+  }
+  return { ok: true, order: data };
 }
