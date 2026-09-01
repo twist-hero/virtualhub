@@ -1653,28 +1653,48 @@ function Oe() {
     }
     , [d])
       , De = async e => {
-        let t = await re({
-            data: {
-                paymentId: e
+        try {
+            let rpcResult = await supabaseClient.rpc('admin_get_payment_proof_url', { p_payment_id: e });
+            if (rpcResult.error) throw rpcResult.error;
+            let path = rpcResult.data?.path;
+            if (!path) { showToast(`No screenshot on this submission`, `error`); return }
+            let urlResult = null;
+            try {
+                urlResult = await supabaseClient.storage.from('payment-proofs').createSignedUrl(path, 3600);
+            } catch (_) {}
+            if (!urlResult || urlResult.error) {
+                try {
+                    urlResult = await supabaseClient.storage.from('screenshot-proofs').createSignedUrl(path, 3600);
+                } catch (_) {}
             }
-        });
-        if (!t.url) {
-            showToast(`No screenshot on this submission`, `error`);
-            return
+            let url = urlResult?.data?.signedUrl;
+            if (!url) { showToast(`Could not generate proof URL`, `error`); return }
+            _w(url)
+        } catch (err) {
+            showToast(`Could not load proof: ` + (err?.message || err), `error`)
         }
-        _w(t.url)
     }
       , Oe = async e => {
-        let t = await se({
-            data: {
-                orderId: e
+        try {
+            let rpcResult = await supabaseClient.rpc('admin_get_order_proof_url', { p_order_id: e });
+            if (rpcResult.error) throw rpcResult.error;
+            let path = rpcResult.data?.path;
+            if (!path) { showToast(`No screenshot on this order`, `error`); return }
+            let urlResult = null;
+            try {
+                urlResult = await supabaseClient.storage.from('screenshot-proofs').createSignedUrl(path, 3600);
+            } catch (_) {}
+            if (!urlResult || urlResult.error) {
+                try {
+                    urlResult = await supabaseClient.storage.from('payment-proofs').createSignedUrl(path, 3600);
+                } catch (_) {}
             }
-        });
-        if (!t.url) {
-            showToast(`No screenshot on this order`, `error`);
-            return
+            let url = urlResult?.data?.signedUrl;
+            if (!url) { showToast(`Could not generate proof URL`, `error`); return }
+            _w(url)
+        } catch (err) {
+            showToast(`Could not load proof: ` + (err?.message || err), `error`)
         }
-        _w(t.url)
     }
     ;
     return (0,
