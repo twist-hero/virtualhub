@@ -575,7 +575,7 @@ export function u_comp(props) {
           payment_nigeria: { provider: nigeriaProvider, accountName: nigeriaName, accountNumber: nigeriaNumber, instructions: [] },
           // Preserve pricing
           // admin_access_code is now managed via change_admin_access_code RPC
-          registration_ghs: data?.registration_ghs ?? 50,
+          registration_ghs: data?.registration_ghs ?? 101,
           registration_ngn: data?.registration_ngn ?? 10000,
           prediction_cost: data?.prediction_cost ?? 50,
           efootball_cost: data?.efootball_cost ?? 1,
@@ -933,7 +933,7 @@ export function f_comp(props) {
   const [efootballCost, setEfootballCost] = React.useState(data?.efootball_cost ?? 1);
   const [efootballExpiry, setEfootballExpiry] = React.useState(data?.efootball_expiry ?? 10);
   const [spinCost, setSpinCost] = React.useState(data?.spin_cost ?? 50);
-  const [regGHS, setRegGHS] = React.useState(data?.registration_ghs ?? 50);
+  const [regGHS, setRegGHS] = React.useState(data?.registration_ghs ?? 101);
   const [regNGN, setRegNGN] = React.useState(data?.registration_ngn ?? 10000);
   const [loading, setLoading] = React.useState(false);
 

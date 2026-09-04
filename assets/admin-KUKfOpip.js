@@ -1235,7 +1235,7 @@ function PricingPanel(props) {
   const [efootballCost, setEfootballCost] = I.useState(data?.efootball_cost ?? 1);
   const [efootballExpiry, setEfootballExpiry] = I.useState(data?.efootball_expiry ?? 10);
   const [spinCost, setSpinCost] = I.useState(data?.spin_cost ?? 50);
-  const [regGHS, setRegGHS] = I.useState(data?.registration_ghs ?? 50);
+  const [regGHS, setRegGHS] = I.useState(data?.registration_ghs ?? 101);
   const [regNGN, setRegNGN] = I.useState(data?.registration_ngn ?? 10000);
   const [geminiApiKey, setGeminiApiKey] = I.useState('');
   const [loading, setLoading] = I.useState(false);
